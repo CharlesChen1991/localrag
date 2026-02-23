@@ -1,62 +1,115 @@
-# AI Assistant Prototype (Java Desktop + Local HTTP + Web UI)
+# AI Assistant Prototype (Java + React + Local RAG)
 
-## 运行方式
+这是一个基于 Java (SparkJava) 后端和 React 前端的本地 AI 助手原型，集成了多模态 RAG (Retrieval-Augmented Generation) 能力，支持文本、图片和视频内容的检索与问答。
 
-在项目根目录执行：
+## ✨ 核心特性
+
+- **多模态 RAG**:
+  - **文本**: 支持 Markdown, PDF, TXT 等格式的解析与分块。
+  - **图片**: 利用 Vision LLM (如 Qwen-VL) 生成图片描述并建立索引。
+  - **视频**: 利用 FFmpeg 自动抽帧，结合 Vision LLM 生成详细的视频内容描述，支持基于内容的视频检索。
+- **智能 Agent**:
+  - 基于 ReAct (Reasoning + Acting) 模式。
+  - 支持自定义 Skills (工具调用) 和 Rules (系统提示词)。
+  - 具备思考过程展示 (Thinking Process) 和流式响应。
+- **本地优先架构**:
+  - 元数据存储于 SQLite。
+  - 向量存储支持 Milvus。
+  - 关键词检索支持 Elasticsearch (BM25)。
+
+详细技术架构请参考：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
+---
+
+## 🚀 快速启动
+
+### 1. 环境准备
+
+确保本地已安装以下工具：
+
+- **Java**: JDK 11 或更高版本。
+- **Node.js**: v18+ (用于前端构建)。
+- **FFmpeg**: 用于视频处理 (`ffmpeg` 和 `ffprobe` 需在 PATH 中或指定路径)。
+- **Docker** (推荐): 用于启动 Milvus 和 Elasticsearch。
+
+### 2. 启动依赖服务
+
+使用 Docker Compose 启动向量数据库 (Milvus) 和搜索引擎 (Elasticsearch)：
 
 ```bash
-cd ai-assistant-prototype
-gradle :desktop:run
+# 启动 Milvus (参考官方文档)
+wget https://github.com/milvus-io/milvus/releases/download/v2.3.7/milvus-standalone-docker-compose.yml -O docker-compose.yml
+docker-compose up -d
+
+# 启动 Elasticsearch (可选，用于关键词检索增强)
+docker run -d --name elasticsearch -p 9200:9200 -e "discovery.type=single-node" elasticsearch:7.17.10
 ```
 
-默认会启动本地服务在 `http://127.0.0.1:18080/` 并打开桌面窗口（内置 WebView）。
+### 3. 配置应用
 
-如果你只想用浏览器打开 Web UI，也可以只启动服务端，然后访问本地地址即可。
-
-## 配置在哪里
-
-- 配置根目录（home）默认是 `ai-assistant-prototype/config`。
-- 桌面端：通过 JVM System Property `assistant.home` 指定 home。
-- 服务端：通过启动参数 `--home=` 指定 home。
-
-更完整的说明见：
-
-- [docs/Configuration.md](file:///Users/charles/Documents/trae_projects/comercial/ai-assistant-prototype/docs/Configuration.md)
-- [docs/WebUI_Functional_Design.md](file:///Users/charles/Documents/trae_projects/comercial/ai-assistant-prototype/docs/WebUI_Functional_Design.md)
-
-## 配置
-
-- 配置目录默认是 `ai-assistant-prototype/config`。
-- 你也可以通过 JVM 参数指定：
+复制示例配置文件并设置 API Key：
 
 ```bash
-gradle :desktop:run -Dassistant.home=/abs/path/to/config
+cp config/app.yml.example config/app.yml
 ```
 
-只启动服务端时：
+编辑 `config/app.yml` 或设置环境变量：
 
 ```bash
-gradle :server:run --args='--port=18081 --home=/abs/path/to/config'
+# 推荐方式：设置环境变量 (避免 Key 泄露)
+export DASH_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
-### Milvus
+*注意：本项目默认配置为使用阿里云 DashScope (Qwen-Plus / Qwen-VL)，你需要拥有有效的 API Key。*
 
-编辑 `config/app.yml`：
+### 4. 启动后端服务
 
-- `milvus.enabled: true`
-- `milvus.host` / `milvus.port`
+在项目根目录下执行：
 
-启动后，对监听目录下的文本文件进行新增/修改，会写入 Milvus collection `rag_chunks`。
+```bash
+# 启动服务端 (默认端口 18081)
+./gradlew :server:run --args='--port=18081 --home=./config'
+```
 
-## 当前原型能力说明
+服务启动后，将自动监听 `data/` 目录下的文件变化。
 
-- 多目录递归监听：支持（新增目录后立即开始监听）。
-- ETL：文本真实抽取与分块；图片/视频当前写入占位 chunk（后续可接入 vision/ffmpeg）。
-- 写入：Milvus 支持；ES 可选配置已预留（写入与融合召回后续补齐）。
-- YAML：`skills.d` / `rules.*.d` / `mcp.d` 可加载并在 UI 中查看。
-- 对话：当前为占位实现（使用 SQLite LIKE 召回）；Milvus + ES 融合召回与远程 LLM 生成后续补齐。
+### 5. 启动前端界面
 
-## MCP（占位框架）
+新开一个终端窗口：
 
-- `GET /api/mcp/tools`：列出内置 tools（file.list/file.read/index.search）
-- `POST /api/mcp/call`：调用内置 tool（JSON: `{ "name": "file.list", "input": {"path": "/tmp"} }`）
+```bash
+cd web-react
+npm install
+npm run dev
+```
+
+访问浏览器：`http://localhost:5173` (或控制台输出的地址)。
+
+---
+
+## 📂 项目结构
+
+```
+.
+├── server/                 # Java 后端源码
+├── web-react/              # React 前端源码
+├── config/                 # 配置文件目录
+│   ├── app.yml             # 主配置
+│   ├── skills.d/           # Agent 技能定义
+│   └── rules.system.d/     # Agent 系统提示词
+├── data/                   # 默认的数据监听目录 (放入文件即可被索引)
+└── docs/                   # 详细文档
+```
+
+## 🛠️ 常见问题
+
+- **视频无法解析？**
+  - 确保系统安装了 `ffmpeg`。
+  - 检查 `config/app.yml` 中 LLM 配置是否支持 Vision 模型 (如 `qwen-vl-max`)。
+- **RAG 检索无结果？**
+  - 检查 Milvus 服务是否正常运行。
+  - 查看后端日志 `DEBUG: RAG search query...` 确认是否有召回。
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
