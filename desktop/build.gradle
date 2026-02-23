@@ -1,0 +1,10 @@
+apply plugin: 'application'
+
+application {
+  mainClassName = 'local.ai.desktop.DesktopMain'
+}
+
+dependencies {
+  implementation project(':server')
+}
+

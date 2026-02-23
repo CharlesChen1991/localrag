@@ -1,0 +1,11 @@
+name: "file_search"
+description: "在本地索引里按关键字搜索（占位示例）"
+input_schema:
+  type: object
+  properties:
+    query:
+      type: string
+  required: ["query"]
+executor:
+  type: "builtin"
+

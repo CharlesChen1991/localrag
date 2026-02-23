@@ -1,0 +1,7 @@
+name: "force_file_skill"
+type: "trigger"
+match:
+  contains: ["查文件", "搜索文件"]
+action:
+  tool: "file_search"
+

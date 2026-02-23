@@ -1,0 +1,27 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Build
+build/
+.gradle/
+target/
+out/
+node_modules/
+dist/
+coverage/
+
+# Data
+data/
+config/data/
+app.db
+*.db
+*.log
+*.pid
+
+# Secrets
+config/app.yml
+.env
+.env.*

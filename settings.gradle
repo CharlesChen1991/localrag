@@ -1,0 +1,6 @@
+rootProject.name = 'ai-assistant-prototype'
+
+include 'shared'
+include 'server'
+include 'desktop'
+

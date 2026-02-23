@@ -1,0 +1,6 @@
+name: "example_mcp"
+mode: "client"
+transport: "stdio"
+command: "node"
+args: ["/path/to/mcp-server.js"]
+

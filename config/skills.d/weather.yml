@@ -1,0 +1,13 @@
+name: "weather_get"
+description: "获取指定城市的天气信息"
+input_schema:
+  type: object
+  properties:
+    city:
+      type: string
+      description: "城市名称，例如 Shanghai"
+  required: ["city"]
+executor:
+  type: "http"
+  method: "GET"
+  url: "https://wttr.in/{city}?format=j1"

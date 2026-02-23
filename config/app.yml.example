@@ -1,0 +1,24 @@
+dataDir: "./data"
+
+milvus:
+  enabled: true
+  host: "127.0.0.1"
+  port: 19530
+  collection: "rag_chunks"
+  dim: 384
+
+es:
+  enabled: true
+  url: "http://127.0.0.1:9200"
+  username: ""
+  password: ""
+
+llm:
+  baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  apiKey: "${DASH_API_KEY}"
+  chatModel: "qwen-plus"
+  embeddingModel: ""
+
+etl:
+  maxTextBytes: 2000000
+  chunkMaxChars: 1200
