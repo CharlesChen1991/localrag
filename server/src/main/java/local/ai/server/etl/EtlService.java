@@ -128,7 +128,8 @@ public final class EtlService {
     } else if (isImage) {
       chunks = Collections.singletonList("[IMAGE] " + path.getFileName() + "\npath=" + path.toAbsolutePath().normalize());
     } else {
-      chunks = Collections.singletonList("[VIDEO] " + path.getFileName() + "\npath=" + path.toAbsolutePath().normalize());
+      String meta = TextExtractors.extractVideoFrames(path, config);
+      chunks = Collections.singletonList(meta);
     }
 
     store.upsertFileAndChunks(fileId, path, size, mtime, chunks);
@@ -406,21 +407,27 @@ public final class EtlService {
 
   public List<SqliteStore.ChunkRow> ragRecall(String query, int topK) {
     int k = Math.max(1, topK);
+    System.out.println("DEBUG: RAG search query: " + query + ", topK: " + k);
     if (config.milvus.enabled) {
       try {
         float[] qv = embedding.embedQuery(query);
         List<MilvusVectorSink.SearchHit> hits = milvus.search(qv, k);
+        System.out.println("DEBUG: Milvus hits: " + hits.size());
         List<String> ids = new ArrayList<>();
         for (MilvusVectorSink.SearchHit h : hits) {
           ids.add(h.chunkId);
+          System.out.println("DEBUG: Hit chunkId=" + h.chunkId + ", score=" + h.score + ", path=" + h.path);
         }
         List<SqliteStore.ChunkRow> rows = store.listChunksByIds(ids);
         if (!rows.isEmpty()) {
           return rows;
         }
-      } catch (Exception ignored) {
+      } catch (Exception e) {
+        System.err.println("DEBUG: Milvus search failed: " + e.getMessage());
+        e.printStackTrace();
       }
     }
+    System.out.println("DEBUG: Fallback to SQLite LIKE search");
     return store.searchChunksLike(query, k);
   }
 

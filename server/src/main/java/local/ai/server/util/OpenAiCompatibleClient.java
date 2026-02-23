@@ -57,9 +57,13 @@ public final class OpenAiCompatibleClient {
   }
 
   public String chat(String model, String message) {
+    return chat(model, java.util.Collections.singletonList(new Message("user", message)));
+  }
+
+  public String chat(String model, java.util.List<Message> messages) {
     try {
       String url = baseUrl + (baseUrl.endsWith("/v1") ? "" : "/v1") + "/chat/completions";
-      ChatRequest body = new ChatRequest(model, message);
+      ChatRequest body = new ChatRequest(model, messages, null, false);
       String bodyJson = Json.toJson(body);
       
       Request req = new Request.Builder()
@@ -133,6 +137,8 @@ public final class OpenAiCompatibleClient {
     public final java.util.List<String> stop;
     public final boolean stream;
 
+
+
     public ChatRequest(String model, String message) {
       this(model, java.util.Collections.singletonList(new Message("user", message)), null, false);
     }
@@ -151,9 +157,14 @@ public final class OpenAiCompatibleClient {
 
   public static final class Message {
     public final String role;
-    public final String content;
+    public final Object content;
 
     public Message(String role, String content) {
+      this.role = role;
+      this.content = content;
+    }
+
+    public Message(String role, java.util.List<java.util.Map<String, Object>> content) {
       this.role = role;
       this.content = content;
     }

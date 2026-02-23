@@ -15,5 +15,6 @@ dependencies {
   implementation 'org.slf4j:slf4j-simple:1.7.36'
 
   implementation 'io.milvus:milvus-sdk-java:2.3.7'
+  implementation 'net.bramp.ffmpeg:ffmpeg:0.8.0'
 }
 

@@ -1,4 +1,0 @@
-Milvus is a vector database.
-Elasticsearch is a search engine.
-We are building a RAG system.
-This is a test file for indexing.
